@@ -1,7 +1,7 @@
 from setuptools import setup
 
 APP = ['colama.py']
-DATA_FILES = ['lama.png','path.txt']
+DATA_FILES = ['lama.png','path.txt','green.png', 'red.png']
 OPTIONS = {
     'argv_emulation': False,
     'iconfile': 'lama.icns',

@@ -12,7 +12,7 @@ hasPip:
 
 installDependencies: hasColima hasDocker hasPip
 	@echo "Installing dependencies..."
-	@pip install -r requirements.txt
+	@pip install --use-pep517 -r requirements.txt
 
 build: installDependencies
 	@echo "Building app..."

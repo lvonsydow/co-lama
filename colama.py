@@ -1,35 +1,32 @@
 import os
-import queue
-import threading
-import time
 import rumps
 import subprocess
 
 class Colama(rumps.App):
-    docker_images = {}
+    running_docker_images = {}
 
     def __init__(self):
         super(Colama, self).__init__("Co-lama")
         self.openPathSettings()
         os.environ['PATH'] += os.pathsep + self.getPath()
         self.icon = 'lama.png'
-        self.menu = ["Title", rumps.separator, "Start Colima", "Stop Colima", rumps.separator, "Status", rumps.separator, "Images"]
-        self.menu["Title"].title = "🦙 Co-lama"
+        self.menu = ["Title", rumps.separator, "Start Colima", "Stop Colima", rumps.separator, "Status", rumps.separator, "Containers", "Refresh"]
+        self.menu["Title"].title = "Co-lama"
         
         self.update_docker_status()
         self.timer = rumps.Timer(self.update_docker_status, 15)
         self.timer.start()
-        
-        self.docker_images_queue = queue.Queue()
+
         self.check_docker_images()
         self.check = rumps.Timer(self.check_docker_images, 10)
         self.check.start()
-        self.images = rumps.Timer(self.update_docker_images_ui, 12)
-        self.images.start()
+        
+        self.update_docker_images_ui()
+
 
     def check_docker_images(self, _=None):
         if self.is_docker_running():
-            dockerPS = subprocess.check_output(["docker ps"], shell=True).decode('utf-8')
+            dockerPS = subprocess.check_output(["docker ps -a"], shell=True).decode('utf-8')
             dockerPS = dockerPS.split('\n')[1:]  # Skip the header row
 
             new_docker_images = {}  # Create a new dictionary to hold the current Docker images
@@ -40,27 +37,34 @@ class Colama(rumps.App):
                     if len(columns) > 1:  # Make sure there is an image name
                         image_name = columns[1]  # The image name is the second column
                         container_id = columns[0]  # The container ID is the first column
-                        new_docker_images[image_name] = container_id  # Save the container ID
+                        status = columns[4:10]  # The status is the fifth column
+                        is_up = "Up" in status  # Check if the status includes "Up"
+                        print(is_up)
+                        new_docker_images[image_name] = [container_id, is_up]  # Save the container ID and the status
 
-            if new_docker_images != self.docker_images:
-                self.docker_images = new_docker_images
-                print("Updating queue")
-                self.docker_images_queue.put(new_docker_images)
+            if new_docker_images != self.running_docker_images:
+                print("Docker images changed")
+                self.running_docker_images = new_docker_images
+                self.update_docker_images_ui()
 
 
     def update_docker_images_ui(self, _=None):
-        try:
-            new_docker_images = self.docker_images_queue.get_nowait()
-            if len(self.menu["Images"]) > 0:
-                self.menu["Images"].clear()
-            for image in new_docker_images.keys():
-                print("Updating UI")
-                self.menu["Images"].add(rumps.MenuItem(image, callback=self.userclick))
-        except queue.Empty:
-            pass
+        if "Containers" in self.menu:
+            del self.menu["Containers"]
+        images_menu = rumps.MenuItem("Containers")
+        self.menu.insert_before("Refresh", images_menu)
+        for image in self.running_docker_images.keys():
+            data = self.running_docker_images[image]
+            print(data)
+            if(data[1]):
+                images_menu.add(rumps.MenuItem(image, callback=self.userclickStop, icon="green.png"))
+            else:
+                images_menu.add(rumps.MenuItem(image, callback=self.userclickStart, icon="red.png"))
 
-    def userclick(self, menuitem):
-        self.openActionWindow(menuitem.title)
+    def userclickStop(self, menuitem):
+        self.openActionWindow(menuitem.title, "stop")
+    def userclickStart(self, menuitem):
+        self.openActionWindow(menuitem.title, "start")
 
     def is_docker_running(self):
         try:
@@ -90,13 +94,16 @@ class Colama(rumps.App):
         self.menu["Status"].title = "🔴 Nope, not running"
         rumps.notification("Finally", "Going back to bed", "Maybe something to eat.. cake?")
     
-    def openActionWindow(self, image_name):
-        container_id = self.docker_images[image_name]
-        response = rumps.alert('Are you sure?', 'Want to stop ' + image_name + '?', ok='Destroy!', cancel='Meh')
+    def openActionWindow(self, image_name, action):
+        
+        data = self.running_docker_images[image_name]
+            
+        response = rumps.alert('Are you sure?', 'Want to '+ action + ' ' + image_name + '?', ok= 'Let´s gooooo!', cancel='Meh')
         if response == 1:
-            subprocess.run(["docker stop " + container_id], shell=True, check=True) 
+            subprocess.run(["docker " + action + " " + data[0]], shell=True, check=True) 
             rumps.notification("Im getting tired", "I do everything for you 🙄", "I'm going back to bed")
             self.check_docker_images()
+            self.update_docker_images_ui()
         elif response == 0:
             rumps.notification("Ok", "No worries", "Nothing happened")
     
