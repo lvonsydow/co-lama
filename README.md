@@ -29,7 +29,7 @@ and the app should be ready to go!
 
 ---
 
-### But wait.. how do iI use it?
+### But wait.. how do I use it?
 
 It is simple!
 Open the app like you would and it will appear in the top menu of your app.
