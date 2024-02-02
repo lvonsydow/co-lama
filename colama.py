@@ -39,11 +39,9 @@ class Colama(rumps.App):
                         container_id = columns[0]  # The container ID is the first column
                         status = columns[4:10]  # The status is the fifth column
                         is_up = "Up" in status  # Check if the status includes "Up"
-                        print(is_up)
                         new_docker_images[image_name] = [container_id, is_up]  # Save the container ID and the status
 
             if new_docker_images != self.running_docker_images:
-                print("Docker images changed")
                 self.running_docker_images = new_docker_images
                 self.update_docker_images_ui()
 
@@ -53,9 +51,10 @@ class Colama(rumps.App):
             del self.menu["Containers"]
         images_menu = rumps.MenuItem("Containers")
         self.menu.insert_before("Refresh", images_menu)
+        images_menu.add(rumps.MenuItem("Delete all containers", callback=self.del_containers))
+        images_menu.add(rumps.separator)
         for image in self.running_docker_images.keys():
             data = self.running_docker_images[image]
-            print(data)
             if(data[1]):
                 images_menu.add(rumps.MenuItem(image, callback=self.userclickStop, icon="green.png"))
             else:
@@ -93,6 +92,13 @@ class Colama(rumps.App):
         subprocess.run(["colima stop"], shell=True, check=True)
         self.menu["Status"].title = "🔴 Nope, not running"
         rumps.notification("Finally", "Going back to bed", "Maybe something to eat.. cake?")
+
+    def del_containers(self, _):
+        if not self.is_docker_running():
+            rumps.notification("Buuuuuuh", "Docker is not running", "Can´t help you with that attitude -.-")
+            return
+        subprocess.run(["docker rm $(docker ps --filter status=exited -q)"], shell=True, check=True)
+        rumps.notification("That was bold", "Hope you know what you are doing..", "Well well, more cake?")
     
     def openActionWindow(self, image_name, action):
         
