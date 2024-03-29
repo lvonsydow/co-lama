@@ -10,8 +10,7 @@ class Colama(rumps.App):
         self.openPathSettings()
         os.environ['PATH'] += os.pathsep + self.getPath()
         self.icon = 'lama.png'
-        self.menu = ["Title", rumps.separator, "Start Colima", "Stop Colima", rumps.separator, "Status", rumps.separator, "Containers", "Refresh"]
-        self.menu["Title"].title = "Co-lama"
+        self.menu = ["Status", rumps.separator, "Start Docker", "Stop Docker", rumps.separator, "Containers", "Refresh"]
         
         self.update_docker_status()
         self.timer = rumps.Timer(self.update_docker_status, 15)
@@ -65,6 +64,12 @@ class Colama(rumps.App):
     def userclickStart(self, menuitem):
         self.openActionWindow(menuitem.title, "start")
 
+    def delete_image(self, menuitem):
+        image_name = menuitem.parent.title
+        subprocess.run(["docker rmi " + image_name], shell=True, check=True)
+        self.check_docker_images()
+        self.update_docker_images_ui()
+
     def is_docker_running(self):
         try:
             subprocess.check_output(["docker info"], shell=True)
@@ -72,7 +77,7 @@ class Colama(rumps.App):
         except subprocess.CalledProcessError:
             return False
 
-    @rumps.clicked("Start Colima")
+    @rumps.clicked("Start Docker")
     def start_colima(self, _):
         if self.is_docker_running():
             rumps.notification("ZzZzZ", "Docker is already running pal", "You are already there!")
@@ -83,7 +88,7 @@ class Colama(rumps.App):
         self.menu["Status"].title = "🟢 Docker is up and running"
         rumps.notification("🦙🦙🦙🦙🦙", "Dude..", "We did it")
 
-    @rumps.clicked("Stop Colima")
+    @rumps.clicked("Stop Docker")
     def stop_colima(self, _):
         if not self.is_docker_running():
             rumps.notification("Buuuuuuh", "Docker is not running", "Can´t stop what is not running dummy")
@@ -103,15 +108,10 @@ class Colama(rumps.App):
     def openActionWindow(self, image_name, action):
         
         data = self.running_docker_images[image_name]
-            
-        response = rumps.alert('Are you sure?', 'Want to '+ action + ' ' + image_name + '?', ok= 'Let´s gooooo!', cancel='Meh')
-        if response == 1:
-            subprocess.run(["docker " + action + " " + data[0]], shell=True, check=True) 
-            rumps.notification("Im getting tired", "I do everything for you 🙄", "I'm going back to bed")
-            self.check_docker_images()
-            self.update_docker_images_ui()
-        elif response == 0:
-            rumps.notification("Ok", "No worries", "Nothing happened")
+        subprocess.run(["docker " + action + " " + data[0]], shell=True, check=True) 
+        rumps.notification("Im getting tired", "I do everything for you 🙄", "I'm going back to bed")
+        self.check_docker_images()
+        self.update_docker_images_ui()
     
     def openPathSettings(self, _=None):  
         actualPath=self.getPath()
