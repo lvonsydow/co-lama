@@ -64,11 +64,13 @@ class Colama(rumps.App):
     def userclickStart(self, menuitem):
         self.openActionWindow(menuitem.title, "start")
 
-    def delete_image(self, menuitem):
-        image_name = menuitem.parent.title
-        subprocess.run(["docker rmi " + image_name], shell=True, check=True)
-        self.check_docker_images()
-        self.update_docker_images_ui()
+    def delete_image(self, image):
+        def callback(self, menuitem):  
+            rumps.notification("docker rmi " + image, "test", menuitem.title)  
+            subprocess.run(["docker rmi " + image], shell=True, check=True)
+            self.check_docker_images()
+            self.update_docker_images_ui()
+        return callback
 
     def is_docker_running(self):
         try:
