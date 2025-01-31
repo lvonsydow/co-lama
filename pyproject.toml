@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "co-lama"
+version = "0.1.0"
+description = "A macOS menu bar app for managing Docker containers with Colima"
+authors = ["lvonsydow"]
+readme = "README.md"
+packages = [
+    { include = "colama" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+PySide6 = "^6.6.1"
+docker = "^7.0.0"
+qasync = "^0.27.1"
+chardet = "^5.2.0"
+rich = ">=13.7.0,<14.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = ">=24.1.0,<25.0.0"
+isort = ">=5.13.0,<6.0.0"
+mypy = ">=1.8.0,<2.0.0"
+pytest = ">=8.0.0,<9.0.0"
+setuptools = "^75.8.0"
+py2app = "^0.28.8"
+
+[build-system]
+requires = ["poetry-core>=1.7.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+colama = "colama.main:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
