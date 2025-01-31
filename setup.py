@@ -38,14 +38,17 @@ setup(
     app=APP,
     name='Co-lama',
     packages=find_packages(),
+    package_data={
+        'colama': ['../resources/*'],
+    },
     entry_points={
         'console_scripts': [
             'colama=colama.main:main',
         ],
     },
     data_files=[
-        ('resources', ['resources/lama.icns']),
-    ] + DATA_FILES,
+        ('resources', ['resources/lama.icns', 'resources/green.png', 'resources/red.png']),
+    ],
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
 )
