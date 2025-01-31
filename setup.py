@@ -41,6 +41,7 @@ setup(
     package_data={
         'colama': ['../resources/*'],
     },
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'colama=colama.main:main',
