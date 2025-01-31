@@ -1,7 +1,7 @@
 """
 Setup script for building the Colama macOS application using py2app.
 """
-from setuptools import setup
+from setuptools import setup, find_packages
 
 APP = ['colama/main.py']
 DATA_FILES = [
@@ -37,6 +37,12 @@ OPTIONS = {
 setup(
     app=APP,
     name='Co-lama',
+    packages=find_packages(),
+    entry_points={
+        'console_scripts': [
+            'colama=colama.main:main',
+        ],
+    },
     data_files=[
         ('resources', ['resources/lama.icns']),
     ] + DATA_FILES,
