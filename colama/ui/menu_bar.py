@@ -22,12 +22,13 @@ class ColamaMenuBar(QSystemTrayIcon):
         
         # Try to find the resource files in different locations
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        homebrew_prefix = os.path.dirname(os.path.dirname(sys.executable))  # /opt/homebrew/Cellar/co-lama/0.1.0
+        homebrew_prefix = os.path.dirname(os.path.dirname(os.path.dirname(sys.executable)))  # /opt/homebrew/Cellar/co-lama/0.1.0
         
         # Try to find the icon file in different locations
         icon_paths = [
             os.path.join(base_dir, 'resources', 'lama.icns'),  # Development
             os.path.join(homebrew_prefix, 'resources', 'lama.icns'),  # Homebrew installation
+            os.path.join(homebrew_prefix, 'libexec', 'resources', 'lama.icns'),  # Homebrew installation (libexec)
         ]
         
         icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
@@ -164,6 +165,7 @@ class ColamaMenuBar(QSystemTrayIcon):
             icon_paths = [
                 os.path.join(base_dir, 'resources', "green.png"),  # Development
                 os.path.join(homebrew_prefix, 'resources', "green.png"),  # Homebrew installation
+                os.path.join(homebrew_prefix, 'libexec', 'resources', "green.png"),  # Homebrew installation (libexec)
             ]
             green_icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
             if green_icon_path is None:
@@ -173,6 +175,7 @@ class ColamaMenuBar(QSystemTrayIcon):
             icon_paths = [
                 os.path.join(base_dir, 'resources', "red.png"),  # Development
                 os.path.join(homebrew_prefix, 'resources', "red.png"),  # Homebrew installation
+                os.path.join(homebrew_prefix, 'libexec', 'resources', "red.png"),  # Homebrew installation (libexec)
             ]
             red_icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
             if red_icon_path is None:
