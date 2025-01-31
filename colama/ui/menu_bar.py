@@ -20,13 +20,14 @@ class ColamaMenuBar(QSystemTrayIcon):
         self.signal_emitter = SignalEmitter()
         self.signal_emitter.notify.connect(self.show_notification)
         
-        # Get the base directory for assets
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        
         # Try to find the resource files in different locations
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        homebrew_prefix = os.path.dirname(os.path.dirname(sys.executable))  # /opt/homebrew/Cellar/co-lama/0.1.0
+        
+        # Try to find the icon file in different locations
         icon_paths = [
             os.path.join(base_dir, 'resources', 'lama.icns'),  # Development
-            os.path.join(sys.prefix, 'resources', 'lama.icns'),  # Pip/Homebrew installation
+            os.path.join(homebrew_prefix, 'resources', 'lama.icns'),  # Homebrew installation
         ]
         
         icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
@@ -116,7 +117,7 @@ class ColamaMenuBar(QSystemTrayIcon):
     async def _async_update_docker_status(self):
         """Update the Docker status in the menu bar."""
         is_running = self.docker_service.is_docker_running()
-        self.status_action.setText("🟢 Docker is up and running" if is_running else "🔴 Not running")
+        self.status_action.setText(" Docker is up and running" if is_running else " Not running")
         self.start_action.setEnabled(not is_running)
         self.stop_action.setEnabled(is_running)
         
@@ -162,7 +163,7 @@ class ColamaMenuBar(QSystemTrayIcon):
             base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             icon_paths = [
                 os.path.join(base_dir, 'resources', "green.png"),  # Development
-                os.path.join(sys.prefix, 'resources', "green.png"),  # Pip/Homebrew installation
+                os.path.join(homebrew_prefix, 'resources', "green.png"),  # Homebrew installation
             ]
             green_icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
             if green_icon_path is None:
@@ -171,7 +172,7 @@ class ColamaMenuBar(QSystemTrayIcon):
             
             icon_paths = [
                 os.path.join(base_dir, 'resources', "red.png"),  # Development
-                os.path.join(sys.prefix, 'resources', "red.png"),  # Pip/Homebrew installation
+                os.path.join(homebrew_prefix, 'resources', "red.png"),  # Homebrew installation
             ]
             red_icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
             if red_icon_path is None:
@@ -238,7 +239,7 @@ class ColamaMenuBar(QSystemTrayIcon):
             )
             return
         
-        self.status_action.setText("🟡 Starting...")
+        self.status_action.setText(" Starting...")
         self.signal_emitter.notify.emit(
             "Docker Status",
             "Starting Docker",
@@ -270,7 +271,7 @@ class ColamaMenuBar(QSystemTrayIcon):
             )
             return
         
-        self.status_action.setText("🟡 Stopping...")
+        self.status_action.setText(" Stopping...")
         success = await self.docker_service.stop_colima()
         if success:
             await self._async_update_docker_status()
