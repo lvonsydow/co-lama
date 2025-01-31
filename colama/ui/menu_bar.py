@@ -23,8 +23,18 @@ class ColamaMenuBar(QSystemTrayIcon):
         # Get the base directory for assets
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         
+        # Try to find the resource files in different locations
+        icon_paths = [
+            os.path.join(base_dir, 'resources', 'lama.icns'),  # Development
+            os.path.join(sys.prefix, 'resources', 'lama.icns'),  # Pip/Homebrew installation
+        ]
+        
+        icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
+        if icon_path is None:
+            print(f"Warning: Could not find icon file. Tried: {icon_paths}")
+            return
+        
         # Setup UI with proper icon path
-        icon_path = os.path.join(base_dir, 'resources', 'lama.icns')
         self.setIcon(QIcon(icon_path))
         
         # Create menu
@@ -150,8 +160,26 @@ class ColamaMenuBar(QSystemTrayIcon):
             
             # Add container items
             base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            icon_paths = [
+                os.path.join(base_dir, 'resources', "green.png"),  # Development
+                os.path.join(sys.prefix, 'resources', "green.png"),  # Pip/Homebrew installation
+            ]
+            green_icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
+            if green_icon_path is None:
+                print(f"Warning: Could not find green icon file. Tried: {icon_paths}")
+                return
+            
+            icon_paths = [
+                os.path.join(base_dir, 'resources', "red.png"),  # Development
+                os.path.join(sys.prefix, 'resources', "red.png"),  # Pip/Homebrew installation
+            ]
+            red_icon_path = next((path for path in icon_paths if os.path.exists(path)), None)
+            if red_icon_path is None:
+                print(f"Warning: Could not find red icon file. Tried: {icon_paths}")
+                return
+            
             for container in containers:
-                icon_path = os.path.join(base_dir, 'resources', "green.png" if container.is_running else "red.png")
+                icon_path = green_icon_path if container.is_running else red_icon_path
                 icon = QIcon(icon_path)
                 action = QAction(icon, f"{container.name} ({container.image})")
                 action.container_id = container.container_id
